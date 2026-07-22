@@ -65,6 +65,7 @@
             font-size: var(--font-size-base);
             display: flex;
             height: 100vh;
+            height: 100dvh;
             overflow: hidden;
             transition: background-color var(--anim-speed), color var(--anim-speed);
         }
@@ -215,6 +216,9 @@
             .sidebar.open { transform: translateX(0); }
             .menu-toggle { display: block; }
             .message-wrapper { max-width: 95%; }
+            .chat-container { padding: 15px; padding-bottom: 20px; }
+            .input-area { padding: 12px; }
+            .header { height: 65px; padding: 0 15px; }
         }
     </style>
 </head>
@@ -2937,6 +2941,9 @@ MHK0118N11,MHK0118N11,mahasiswa,AHMAD YUSUF,2331030058,Kelompok 118,FUSA (ILMU A
                 });
                 this.dom.chatInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.handleSend(); }
+                });
+                this.dom.chatInput.addEventListener('focus', () => {
+                    setTimeout(() => this.scrollToBottom(), 300);
                 });
                 this.dom.btnSend.addEventListener('click', () => this.handleSend());
                 this.dom.btnNewChat.addEventListener('click', () => {
