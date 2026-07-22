@@ -2959,7 +2959,15 @@ MHK0118N11,MHK0118N11,mahasiswa,AHMAD YUSUF,2331030058,Kelompok 118,FUSA (ILMU A
                 this.dom.searchInput.addEventListener('input', (e) => this.renderHistory(e.target.value));
 
                 // Settings
-                this.dom.btnSettings.addEventListener('click', (e) => { e.preventDefault(); this.openSettings(); });
+                this.dom.btnSettings.addEventListener('click', (e) => { 
+                    e.preventDefault(); 
+                    const password = prompt("Masukkan password untuk mengakses Data KKN & Pengaturan:");
+                    if (password === "291188") {
+                        this.openSettings(); 
+                    } else if (password !== null) { // Jika user tidak menekan tombol 'Cancel'
+                        alert("Password salah! Akses ditolak.");
+                    }
+                });
                 this.dom.btnCloseSettings.addEventListener('click', () => this.closeSettings());
                 this.dom.selectFontSize.addEventListener('change', (e) => { StorageManager.set('fontSize', e.target.value); this.applySettings(); });
                 this.dom.selectAnimSpeed.addEventListener('change', (e) => StorageManager.set('animSpeed', e.target.value));
