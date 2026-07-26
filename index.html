@@ -429,6 +429,7 @@
                 const askDPL = /(dpl|dosen|pembimbing)/i.test(cleanQuery);
                 const askAccount = /(akun|username|password|login|sandi)/i.test(cleanQuery);
                 const askMembers = /(anggota|siapa saja|daftar|nama nama)/i.test(cleanQuery);
+                const askTematik = /(tematik)/i.test(cleanQuery); // <-- Deteksi KKN Tematik
 
                 // 2. Pencarian Berdasarkan NIM
                 const nimMatch = cleanQuery.match(/\d{8,12}/);
@@ -443,7 +444,100 @@
                     return this.generateGroupResponse(data, `Kelompok ${kelMatch[1]}`, askCount, askLocation, askDPL, askMembers, askAccount);
                 }
 
-                // 4. Pencarian Berdasarkan Nama (Algoritma Skoring)
+                // 4. Pencarian Khusus KKN Tematik (Termasuk sub-kategori spesifik)
+                if (askTematik) {
+                    // Ambil semua data tematik secara umum
+                    let tematikData = data.filter(d => 
+                        (d['Kelompok KKN'] && d['Kelompok KKN'].toLowerCase().includes('tematik')) || 
+                        (d['Lokasi KKN'] && d['Lokasi KKN'].toLowerCase().includes('tematik')) ||
+                        (d['Fakultas'] && d['Fakultas'].toLowerCase().includes('tematik'))
+                    );
+
+                    // Cari keyword spesifik lain selain 'tematik' (misal: 'ponpes', 'masjid', dll)
+                    const stopWordsTematik = ['kkn', 'tematik', 'berapa', 'jumlah', 'siapa', 'saja', 'anggota', 'daftar', 'nama', 'di', 'lokasi', 'dpl', 'kelompok', 'tampilkan', 'berikan', 'yang', 'minta', 'info', 'mahasiswa'];
+                    const specificKeywords = words.filter(w => !stopWordsTematik.includes(w) && w.length > 2);
+                    
+                    let filterName = "KKN Tematik";
+
+                    // Jika user mencari sub-kategori tematik spesifik (Contoh: "Ponpes")
+                    if (specificKeywords.length > 0) {
+                        const filtered = tematikData.filter(d => {
+                            const combinedString = `${d['Kelompok KKN']} ${d['Lokasi KKN']} ${d['Fakultas']}`.toLowerCase();
+                            return specificKeywords.every(kw => combinedString.includes(kw));
+                        });
+
+                        if (filtered.length > 0) {
+                            tematikData = filtered;
+                            // Format judul agar huruf awalnya kapital
+                            const capitalizedWords = specificKeywords.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+                            filterName = `KKN Tematik ${capitalizedWords}`;
+                        } else {
+                            return `Maaf, saya menemukan data KKN Tematik, tetapi tidak ada yang cocok dengan sub-kategori: **"${specificKeywords.join(' ')}"**.\nPastikan ejaannya benar.`;
+                        }
+                    }
+
+                    if (tematikData.length === 0) {
+                        return `Maaf, saya tidak menemukan data mahasiswa, kelompok, atau lokasi untuk **${filterName}** di database saat ini.`;
+                    }
+
+                    const tematikMhs = tematikData.filter(d => d['Role'] !== 'kelompok' && d['NIM_NIP']);
+                    const tematikGroups = [...new Set(tematikMhs.map(d => d['Kelompok KKN']))];
+
+                    if (askCount) {
+                        if (cleanQuery.includes('kelompok')) return `Terdapat **${tematikGroups.length} kelompok** ${filterName} yang terdaftar di sistem.`;
+                        return `Terdapat total **${tematikMhs.length} mahasiswa** yang mengikuti ${filterName}, tersebar di ${tematikGroups.length} kelompok.`;
+                    }
+
+                    // Jika bertanya Rincian Anggota / Nama Mahasiswa secara eksplisit (Daftar Nama)
+                    if (askMembers || cleanQuery.includes('nama mahasiswa') || cleanQuery.includes('daftar mahasiswa') || cleanQuery.includes('nama nama') || cleanQuery.includes('mahasiswa')) {
+                        let response = `**Daftar Mahasiswa ${filterName}:**\n\n`;
+                        
+                        // Batasi tampilan maksimal 5 kelompok beserta anggotanya agar chat tidak kepanjangan
+                        const displayLimit = Math.min(tematikGroups.length, 5); 
+                        
+                        for (let i = 0; i < displayLimit; i++) {
+                            const groupName = tematikGroups[i];
+                            const groupMhs = tematikMhs.filter(d => d['Kelompok KKN'] === groupName);
+                            const lokasi = groupMhs[0] ? groupMhs[0]['Lokasi KKN'] : '-';
+                            const dpl = groupMhs[0] ? groupMhs[0]['DPL'] : '-';
+                            
+                            response += `### ${groupName}\n📍 *${lokasi}*\n👤 DPL: *${dpl}*\n`;
+                            groupMhs.forEach((mhs, idx) => {
+                                response += `${idx + 1}. ${mhs['Nama Lengkap']} (${mhs['NIM_NIP']})\n`;
+                            });
+                            response += `\n`;
+                        }
+
+                        if (tematikGroups.length > 5) {
+                            response += `*...dan ${tematikGroups.length - 5} kelompok ${filterName} lainnya disembunyikan agar pesan tidak terlalu panjang. Anda bisa mencari spesifik per kelompok (contoh: 'siapa saja anggota ${tematikGroups[5] || 'kelompok tematik 6'}').*`;
+                        }
+                        
+                        return response;
+                    }
+
+                    // Jika bertanya Kelompok/Lokasi secara general (tanpa rincian nama)
+                    if (cleanQuery.includes('kelompok') || cleanQuery.includes('lokasi') || cleanQuery.includes('daftar')) {
+                        let response = `**Daftar Kelompok ${filterName} (${tematikGroups.length} Kelompok):**\n\n`;
+                        
+                        // Batasi tampilan maksimal 10 kelompok
+                        const displayLimit = Math.min(tematikGroups.length, 10);
+                        for (let i = 0; i < displayLimit; i++) {
+                            const groupName = tematikGroups[i];
+                            const groupMhs = tematikMhs.filter(d => d['Kelompok KKN'] === groupName);
+                            const lokasi = groupMhs[0] ? groupMhs[0]['Lokasi KKN'] : '-';
+                            response += `- **${groupName}** (${groupMhs.length} mhs) 📍 *${lokasi}*\n`;
+                        }
+                        
+                        if (tematikGroups.length > 10) response += `\n*...dan ${tematikGroups.length - 10} kelompok ${filterName} lainnya.*`;
+                        response += `\n\n*Ketik nama kelompok secara spesifik (contoh: 'anggota ${tematikGroups[0] || 'kelompok 1'}') untuk melihat daftar lengkap anggotanya.*`;
+                        
+                        return response;
+                    }
+
+                    return `**Informasi ${filterName}:**\n- **Total Mahasiswa:** ${tematikMhs.length} orang\n- **Total Kelompok:** ${tematikGroups.length} kelompok\n\n*Anda bisa bertanya lebih spesifik, seperti: 'Daftar nama mahasiswa ${filterName.toLowerCase()}' atau 'Berapa jumlah kelompok ${filterName.toLowerCase()}?'*`;
+                }
+
+                // 5. Pencarian Berdasarkan Nama (Algoritma Skoring)
                 const stopWords = ['siapa', 'cari', 'nama', 'data', 'mahasiswa', 'kkn', 'di', 'ada', 'tolong', 'info', 'dari', 'itu', 'berapa', 'jumlah', 'lokasi', 'dpl', 'akun', 'password', 'username', 'kelompok', 'tampilkan', 'berikan', 'yang', 'bernama', 'minta'];
                 const nameKeywords = words.filter(w => !stopWords.includes(w) && w.length > 2);
 
@@ -473,7 +567,7 @@
                     }
                 }
 
-                // 5. Pertanyaan Statistik Umum
+                // 6. Pertanyaan Statistik Umum
                 if (askCount && (cleanQuery.includes('mahasiswa') || cleanQuery.includes('orang') || cleanQuery.includes('peserta'))) {
                     const totalMhs = data.filter(d => d['Role'] !== 'kelompok' && d['NIM_NIP']).length;
                     return `Berdasarkan database saat ini, total mahasiswa peserta KKN adalah **${totalMhs} orang**.`;
@@ -483,12 +577,12 @@
                     return `Terdapat total **${groups.size} kelompok** KKN yang terdaftar di sistem.`;
                 }
 
-                // 6. Sapaan Bawaan
+                // 7. Sapaan Bawaan
                 if (/halo|hai|pagi|siang|sore|malam|assalamualaikum/i.test(cleanQuery)) {
-                    return "Halo! Saya adalah Asisten Cerdas KKN. Anda bisa bertanya tentang:\n- Data atau Akun mahasiswa (ketik NIM/Nama)\n- Info DPL atau Lokasi kelompok (Cth: *Dimana lokasi kelompok 1?*)\n- Daftar anggota kelompok (Cth: *Siapa saja anggota kelompok 118?*)";
+                    return "Halo! Saya adalah Asisten Cerdas KKN. Anda bisa bertanya tentang:\n- Data atau Akun mahasiswa (ketik NIM/Nama)\n- Info DPL atau Lokasi kelompok (Cth: *Dimana lokasi kelompok 1?*)\n- Info KKN Tematik (Cth: *Ada berapa kelompok kkn tematik?*)\n- Daftar anggota kelompok (Cth: *Siapa saja anggota kelompok 118?*)";
                 }
 
-                return "Maaf, saya tidak memahami pertanyaan tersebut. Coba tanyakan spesifik, contoh:\n- 'Dimana lokasi KKN kelompok 1?'\n- 'Siapa DPL mahasiswa bernama Bayu?'\n- 'Minta akun NIM 2351020136'\n- 'Berapa jumlah anggota kelompok 118?'";
+                return "Maaf, saya tidak memahami pertanyaan tersebut. Coba tanyakan spesifik, contoh:\n- 'Dimana lokasi KKN kelompok 1?'\n- 'Siapa DPL mahasiswa bernama Bayu?'\n- 'Tampilkan daftar kelompok kkn tematik'\n- 'Berapa jumlah anggota kelompok 118?'";
             }
 
             // Fungsi Bantuan: Membuat respon spesifik untuk Mahasiswa
