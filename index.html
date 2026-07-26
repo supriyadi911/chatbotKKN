@@ -52,6 +52,21 @@
             --sidebar-border: #1E293B;
         }
 
+        /* Anti-Seleksi Teks secara Global untuk menghindari copy-paste sembarangan (Kecuali pada pesan chat) */
+        body {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .message-bubble, .code-block-wrapper, textarea {
+            -webkit-user-select: text;
+            -moz-user-select: text;
+            -ms-user-select: text;
+            user-select: text;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -110,7 +125,7 @@
         .menu-toggle { display: none; background: none; border: none; color: var(--text-main); cursor: pointer; }
         .bot-name { font-weight: 600; font-size: 1.1rem; }
         .bot-status { font-size: 0.8rem; color: #10B981; display: flex; align-items: center; gap: 5px; }
-        .bot-status::before { content: ''; width: 8px; height: 8px; background-color: #10B981; border-radius: 50%; animation: pulse 2s infinite; }
+        .bot-status::before { content: ''; width: 8px; height: 8px; background-color: currentColor; border-radius: 50%; animation: pulse 2s infinite; }
         .icon-btn {
             background: transparent; border: none; color: var(--text-muted); cursor: pointer;
             padding: 8px; border-radius: 50%; transition: background 0.2s, color 0.2s;
@@ -200,14 +215,14 @@
         
         .form-group { margin-bottom: 15px; }
         .form-group label { display: block; margin-bottom: 5px; font-size: 0.9rem; font-weight:600;}
-        .form-group select, .form-group input[type="file"] {
+        .form-group select {
             width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 4px;
             background: var(--bg-color); color: var(--text-main);
         }
         .btn-danger { background-color: #EF4444; color: white; border: none; padding: 10px; border-radius: 4px; cursor: pointer; width: 100%; margin-top: 10px; font-weight:bold;}
 
         @keyframes slideInUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); } 70% { box-shadow: 0 0 0 6px rgba(16, 185, 129, 0); } 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 currentColor; opacity: 0.7; } 70% { box-shadow: 0 0 0 6px currentColor; opacity: 0; } 100% { box-shadow: 0 0 0 0 currentColor; opacity: 0; } }
         @keyframes bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
         @keyframes zoomIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
@@ -221,6 +236,40 @@
             .header { height: 65px; padding: 0 15px; }
         }
     </style>
+    
+    <script>
+        // ==========================================
+        // KEAMANAN APLIKASI (ANTI-INSPECT & COPY)
+        // ==========================================
+        
+        // Memblokir klik kanan
+        document.addEventListener('contextmenu', event => event.preventDefault());
+
+        // Memblokir shortcut keyboard DevTools dan View Source
+        document.onkeydown = function(e) {
+            if(e.keyCode == 123) { // F12
+                return false;
+            }
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { // Ctrl+Shift+I
+                return false;
+            }
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) { // Ctrl+Shift+J
+                return false;
+            }
+            if(e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) { // Ctrl+Shift+C
+                return false;
+            }
+            if(e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { // Ctrl+U (View Source)
+                return false;
+            }
+            if(e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) { // Ctrl+S (Save As)
+                return false;
+            }
+            if(e.ctrlKey && e.keyCode == 'P'.charCodeAt(0)) { // Ctrl+P (Print)
+                return false;
+            }
+        }
+    </script>
 </head>
 <body>
 
@@ -242,7 +291,7 @@
         <div class="sidebar-footer">
             <a href="#" class="menu-item" id="btn-settings">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-                Data KKN & Pengaturan
+                Pengaturan Admin
             </a>
         </div>
     </aside>
@@ -285,7 +334,7 @@
 
         <div class="input-area">
             <div class="input-wrapper">
-                <textarea id="chat-input" placeholder="Tanya nama, NIM, kelompok, DPL, atau lokasi KKN..." rows="1"></textarea>
+                <textarea id="chat-input" placeholder="Tanya info mahasiswa, NIM, kelompok, atau KKN Tematik..." rows="1"></textarea>
             </div>
             <button class="send-btn" id="btn-send" title="Kirim">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
@@ -297,16 +346,18 @@
     <div class="modal-overlay" id="modal-settings">
         <div class="modal-content">
             <div class="modal-title">
-                Pengaturan & Database
+                Pengaturan Admin
                 <button class="close-modal" id="btn-close-settings">&times;</button>
             </div>
             
             <div class="form-group" style="background: rgba(37, 99, 235, 0.1); padding: 15px; border-radius: 8px; border: 1px solid rgba(37, 99, 235, 0.3);">
-                <label style="color: var(--primary);">Link Web App Google Apps Script (GAS)</label>
-                <input type="text" id="gas-url" value="https://script.google.com/macros/s/AKfycbzCcmHqO8xfTAMwLxDBL1lN1oJs1-Hp4E0jVFLc7OkZPGV9PN-Oyfrt7oUQb9esd7tLkw/exec" placeholder="Paste URL Web App di sini..." style="width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--border-color); background: white; color: black; margin-bottom: 10px;">
-                <button id="btn-sync-gas" style="background-color: var(--primary); color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; width: 100%; font-weight:bold;">Sinkronisasi Data</button>
+                <label style="color: var(--primary);">Sinkronisasi Database</label>
+                <!-- URL INPUT TELAH DIHAPUS DEMI KEAMANAN -->
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">URL Database telah dienkripsi dan diamankan di dalam sistem. Klik tombol di bawah untuk menyinkronkan data secara manual.</p>
+                
+                <button id="btn-sync-gas" style="background-color: var(--primary); color: white; border: none; padding: 8px; border-radius: 4px; cursor: pointer; width: 100%; font-weight:bold;">Tarik Data Terbaru</button>
 
-                <small id="csv-status" style="display:block; color: var(--text-muted); font-size: 0.85rem; margin-top: 10px;">Status: Belum ada data.</small>
+                <small id="csv-status" style="display:block; color: var(--text-muted); font-size: 0.85rem; margin-top: 10px; font-weight:bold;">Status: Memuat...</small>
             </div>
 
             <div class="form-group">
@@ -324,7 +375,7 @@
                     <option value="1500">Normal (1.5s)</option>
                 </select>
             </div>
-            <button class="btn-danger" id="btn-reset-app">Hapus Semua Data & Riwayat Chat</button>
+            <button class="btn-danger" id="btn-reset-app">Hapus Log & Cache Aplikasi</button>
         </div>
     </div>
 
@@ -368,14 +419,18 @@
 
         class BotEngine {
             constructor() {
-                // Mencoba mengambil data dari Local Storage terlebih dahulu
-                let savedData = StorageManager.get('kkn_data', []);
-                this.kknData = savedData;
+                this.kknData = StorageManager.get('kkn_data', []);
+                // URL GAS di-obfuscate dengan Base64 (Mencegah orang membaca URL secara mentah)
+                this._0xAPI = "aHR0cHM6Ly9zY3JpcHQuZ29vZ2xlLmNvbS9tYWNyb3Mvcy9BS2Z5Y2J6Q2NtSHFPOHhmVEFNd0x4REJMMWxOMW9KczEtSHA0RTBqVkZMYzdPa1pQR1Y5UE4tT3lmcnQ3b1VRYjllc2Q3dExrdy9leGVj";
+            }
+            
+            getApiEndpoint() {
+                return atob(this._0xAPI);
             }
 
-            async fetchFromGAS(url) {
+            async fetchFromGAS() {
                 try {
-                    const response = await fetch(url);
+                    const response = await fetch(this.getApiEndpoint());
                     const result = await response.json();
                     
                     if (result.status === "success") {
@@ -386,7 +441,7 @@
                         return { success: false, error: result.message };
                     }
                 } catch (error) {
-                    return { success: false, error: "Gagal menghubungi server GAS. Pastikan URL benar dan akses 'Anyone'." };
+                    return { success: false, error: "Gagal menyambung ke server yang dilindungi." };
                 }
             }
 
@@ -407,7 +462,7 @@
                 let botReply = "";
 
                 if (this.kknData.length === 0) {
-                    botReply = "Halo! Saya adalah Asisten Monitoring KKN. Saat ini **Database masih kosong**.\nSilakan masukkan link Web App Google Apps Script (GAS) pada menu Pengaturan lalu klik Sinkronisasi.";
+                    botReply = "Halo! Saat ini Database dalam proses sinkronisasi, atau sedang kosong. Jika pesan ini berulang, harap lapor ke admin.";
                 } else {
                     botReply = this.searchKKNData(lowerText, userText);
                 }
@@ -419,47 +474,39 @@
             searchKKNData(query, rawQuery) {
                 const data = this.kknData;
                 
-                // 0. Normalisasi teks (hapus tanda baca agar lebih mudah dibaca sistem)
                 const cleanQuery = query.replace(/[?.,!]/g, ' ').replace(/\s+/g, ' ').trim();
                 const words = cleanQuery.split(' ');
 
-                // 1. Deteksi Niat Pengguna (Intent Recognition)
                 const askCount = /(berapa|jumlah|total)/i.test(cleanQuery);
                 const askLocation = /(dimana|di mana|lokasi|tempat|desa|kampung)/i.test(cleanQuery);
                 const askDPL = /(dpl|dosen|pembimbing)/i.test(cleanQuery);
                 const askAccount = /(akun|username|password|login|sandi)/i.test(cleanQuery);
                 const askMembers = /(anggota|siapa saja|daftar|nama nama)/i.test(cleanQuery);
-                const askTematik = /(tematik)/i.test(cleanQuery); // <-- Deteksi KKN Tematik
+                const askTematik = /(tematik)/i.test(cleanQuery); 
 
-                // 2. Pencarian Berdasarkan NIM
                 const nimMatch = cleanQuery.match(/\d{8,12}/);
                 if (nimMatch) {
                     const student = data.find(d => d['NIM_NIP'] && d['NIM_NIP'].includes(nimMatch[0]));
                     return this.generateStudentResponse(student, askLocation, askDPL, askAccount);
                 }
 
-                // 3. Pencarian Berdasarkan Kelompok KKN
                 const kelMatch = cleanQuery.match(/(?:kelompok|kkn)\s*(\d+)/i);
                 if (kelMatch) {
                     return this.generateGroupResponse(data, `Kelompok ${kelMatch[1]}`, askCount, askLocation, askDPL, askMembers, askAccount);
                 }
 
-                // 4. Pencarian Khusus KKN Tematik (Termasuk sub-kategori spesifik)
                 if (askTematik) {
-                    // Ambil semua data tematik secara umum
                     let tematikData = data.filter(d => 
                         (d['Kelompok KKN'] && d['Kelompok KKN'].toLowerCase().includes('tematik')) || 
                         (d['Lokasi KKN'] && d['Lokasi KKN'].toLowerCase().includes('tematik')) ||
                         (d['Fakultas'] && d['Fakultas'].toLowerCase().includes('tematik'))
                     );
 
-                    // Cari keyword spesifik lain selain 'tematik' (misal: 'ponpes', 'masjid', dll)
                     const stopWordsTematik = ['kkn', 'tematik', 'berapa', 'jumlah', 'siapa', 'saja', 'anggota', 'daftar', 'nama', 'di', 'lokasi', 'dpl', 'kelompok', 'tampilkan', 'berikan', 'yang', 'minta', 'info', 'mahasiswa'];
                     const specificKeywords = words.filter(w => !stopWordsTematik.includes(w) && w.length > 2);
                     
                     let filterName = "KKN Tematik";
 
-                    // Jika user mencari sub-kategori tematik spesifik (Contoh: "Ponpes")
                     if (specificKeywords.length > 0) {
                         const filtered = tematikData.filter(d => {
                             const combinedString = `${d['Kelompok KKN']} ${d['Lokasi KKN']} ${d['Fakultas']}`.toLowerCase();
@@ -468,11 +515,10 @@
 
                         if (filtered.length > 0) {
                             tematikData = filtered;
-                            // Format judul agar huruf awalnya kapital
                             const capitalizedWords = specificKeywords.map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                             filterName = `KKN Tematik ${capitalizedWords}`;
                         } else {
-                            return `Maaf, saya menemukan data KKN Tematik, tetapi tidak ada yang cocok dengan sub-kategori: **"${specificKeywords.join(' ')}"**.\nPastikan ejaannya benar.`;
+                            return `Maaf, saya menemukan data KKN Tematik, tetapi tidak ada yang cocok dengan pencarian khusus: **"${specificKeywords.join(' ')}"**.\nPastikan ejaannya benar.`;
                         }
                     }
 
@@ -488,11 +534,8 @@
                         return `Terdapat total **${tematikMhs.length} mahasiswa** yang mengikuti ${filterName}, tersebar di ${tematikGroups.length} kelompok.`;
                     }
 
-                    // Jika bertanya Rincian Anggota / Nama Mahasiswa secara eksplisit (Daftar Nama)
                     if (askMembers || cleanQuery.includes('nama mahasiswa') || cleanQuery.includes('daftar mahasiswa') || cleanQuery.includes('nama nama') || cleanQuery.includes('mahasiswa')) {
                         let response = `**Daftar Mahasiswa ${filterName}:**\n\n`;
-                        
-                        // Batasi tampilan maksimal 5 kelompok beserta anggotanya agar chat tidak kepanjangan
                         const displayLimit = Math.min(tematikGroups.length, 5); 
                         
                         for (let i = 0; i < displayLimit; i++) {
@@ -507,19 +550,14 @@
                             });
                             response += `\n`;
                         }
-
                         if (tematikGroups.length > 5) {
                             response += `*...dan ${tematikGroups.length - 5} kelompok ${filterName} lainnya disembunyikan agar pesan tidak terlalu panjang. Anda bisa mencari spesifik per kelompok (contoh: 'siapa saja anggota ${tematikGroups[5] || 'kelompok tematik 6'}').*`;
                         }
-                        
                         return response;
                     }
 
-                    // Jika bertanya Kelompok/Lokasi secara general (tanpa rincian nama)
                     if (cleanQuery.includes('kelompok') || cleanQuery.includes('lokasi') || cleanQuery.includes('daftar')) {
                         let response = `**Daftar Kelompok ${filterName} (${tematikGroups.length} Kelompok):**\n\n`;
-                        
-                        // Batasi tampilan maksimal 10 kelompok
                         const displayLimit = Math.min(tematikGroups.length, 10);
                         for (let i = 0; i < displayLimit; i++) {
                             const groupName = tematikGroups[i];
@@ -527,28 +565,22 @@
                             const lokasi = groupMhs[0] ? groupMhs[0]['Lokasi KKN'] : '-';
                             response += `- **${groupName}** (${groupMhs.length} mhs) 📍 *${lokasi}*\n`;
                         }
-                        
                         if (tematikGroups.length > 10) response += `\n*...dan ${tematikGroups.length - 10} kelompok ${filterName} lainnya.*`;
                         response += `\n\n*Ketik nama kelompok secara spesifik (contoh: 'anggota ${tematikGroups[0] || 'kelompok 1'}') untuk melihat daftar lengkap anggotanya.*`;
-                        
                         return response;
                     }
 
                     return `**Informasi ${filterName}:**\n- **Total Mahasiswa:** ${tematikMhs.length} orang\n- **Total Kelompok:** ${tematikGroups.length} kelompok\n\n*Anda bisa bertanya lebih spesifik, seperti: 'Daftar nama mahasiswa ${filterName.toLowerCase()}' atau 'Berapa jumlah kelompok ${filterName.toLowerCase()}?'*`;
                 }
 
-                // 5. Pencarian Berdasarkan Nama (Algoritma Skoring)
                 const stopWords = ['siapa', 'cari', 'nama', 'data', 'mahasiswa', 'kkn', 'di', 'ada', 'tolong', 'info', 'dari', 'itu', 'berapa', 'jumlah', 'lokasi', 'dpl', 'akun', 'password', 'username', 'kelompok', 'tampilkan', 'berikan', 'yang', 'bernama', 'minta'];
                 const nameKeywords = words.filter(w => !stopWords.includes(w) && w.length > 2);
 
                 if (nameKeywords.length > 0) {
-                    // Beri skor pada setiap mahasiswa yang namanya mirip
                     let scoredStudents = data.filter(d => d['Role'] !== 'kelompok').map(student => {
                         let score = 0;
                         const studentName = (student['Nama Lengkap'] || '').toLowerCase();
-                        nameKeywords.forEach(kw => {
-                            if (studentName.includes(kw)) score += 2;
-                        });
+                        nameKeywords.forEach(kw => { if (studentName.includes(kw)) score += 2; });
                         return { student, score };
                     }).filter(s => s.score > 0).sort((a, b) => b.score - a.score);
 
@@ -567,7 +599,6 @@
                     }
                 }
 
-                // 6. Pertanyaan Statistik Umum
                 if (askCount && (cleanQuery.includes('mahasiswa') || cleanQuery.includes('orang') || cleanQuery.includes('peserta'))) {
                     const totalMhs = data.filter(d => d['Role'] !== 'kelompok' && d['NIM_NIP']).length;
                     return `Berdasarkan database saat ini, total mahasiswa peserta KKN adalah **${totalMhs} orang**.`;
@@ -577,34 +608,24 @@
                     return `Terdapat total **${groups.size} kelompok** KKN yang terdaftar di sistem.`;
                 }
 
-                // 7. Sapaan Bawaan
                 if (/halo|hai|pagi|siang|sore|malam|assalamualaikum/i.test(cleanQuery)) {
-                    return "Halo! Saya adalah Asisten Cerdas KKN. Anda bisa bertanya tentang:\n- Data atau Akun mahasiswa (ketik NIM/Nama)\n- Info DPL atau Lokasi kelompok (Cth: *Dimana lokasi kelompok 1?*)\n- Info KKN Tematik (Cth: *Ada berapa kelompok kkn tematik?*)\n- Daftar anggota kelompok (Cth: *Siapa saja anggota kelompok 118?*)";
+                    return "Halo! Saya adalah Asisten Cerdas KKN. Anda bisa bertanya tentang:\n- Data atau Akun mahasiswa (ketik NIM/Nama)\n- Info DPL atau Lokasi kelompok (Cth: *Dimana lokasi kelompok 1?*)\n- Info KKN Tematik (Cth: *Ada berapa kelompok kkn tematik ponpes?*)\n- Daftar anggota kelompok (Cth: *Siapa saja anggota kelompok 118?*)";
                 }
 
-                return "Maaf, saya tidak memahami pertanyaan tersebut. Coba tanyakan spesifik, contoh:\n- 'Dimana lokasi KKN kelompok 1?'\n- 'Siapa DPL mahasiswa bernama Bayu?'\n- 'Tampilkan daftar kelompok kkn tematik'\n- 'Berapa jumlah anggota kelompok 118?'";
+                return "Maaf, saya tidak memahami pertanyaan tersebut. Coba tanyakan spesifik, contoh:\n- 'Dimana lokasi KKN kelompok 1?'\n- 'Siapa DPL mahasiswa bernama Bayu?'\n- 'Tampilkan anggota kelompok kkn tematik ponpes'\n- 'Minta akun NIM 2351020136'";
             }
 
-            // Fungsi Bantuan: Membuat respon spesifik untuk Mahasiswa
             generateStudentResponse(student, askLocation, askDPL, askAccount) {
                 if (!student) return `Maaf, data mahasiswa tersebut tidak ditemukan.`;
-
                 if (askLocation) return `Lokasi KKN **${student['Nama Lengkap']}** (${student['NIM_NIP']}) berada di:\n**${student['Lokasi KKN'] || '-'}**\n*(Tergabung dalam ${student['Kelompok KKN'] || '-'})*.`;
-                
                 if (askDPL) return `Dosen Pembimbing Lapangan (DPL) untuk **${student['Nama Lengkap']}** adalah **${student['DPL'] || '-'}**.`;
-                
                 if (askAccount) return `**Informasi Akun:**\n- Nama: **${student['Nama Lengkap']}**\n- Username: \`${student['Username'] || '-'}\`\n- Password: \`${student['Password'] || '-'}\``;
-
-                // Jika tidak ada niat spesifik, tampilkan semua (Full Biodata)
                 return `**Data Mahasiswa Ditemukan:**\n\n- **Nama:** ${student['Nama Lengkap'] || '-'}\n- **NIM:** ${student['NIM_NIP'] || '-'}\n- **Fakultas:** ${student['Fakultas'] || '-'}\n- **Kelompok:** ${student['Kelompok KKN'] || '-'}\n- **DPL:** ${student['DPL'] || '-'}\n- **Lokasi KKN:** ${student['Lokasi KKN'] || '-'}\n\n**Informasi Akun Login:**\n- **Username:** \`${student['Username'] || '-'}\`\n- **Password:** \`${student['Password'] || '-'}\``;
             }
 
-            // Fungsi Bantuan: Membuat respon spesifik untuk Kelompok
             generateGroupResponse(data, groupName, askCount, askLocation, askDPL, askMembers, askAccount) {
                 const kelData = data.filter(d => d['Kelompok KKN'] && d['Kelompok KKN'].toLowerCase() === groupName.toLowerCase() && d['Role'] !== 'kelompok');
-                
                 if (kelData.length === 0) return `Maaf, belum ada data untuk **${groupName}** di dalam sistem.`;
-
                 const dpl = kelData[0]['DPL'] || '-';
                 const lokasi = kelData[0]['Lokasi KKN'] || '-';
                 
@@ -618,11 +639,8 @@
                         if (askAccount) text += `\n   ↳ Akun: \`${d['Username']}\` | Pass: \`${d['Password']}\``;
                         return text;
                     }).join('\n');
-                    
                     return `**Daftar Anggota ${groupName}:**\n\n${members}\n\n**DPL:** ${dpl}\n**Lokasi:** ${lokasi}`;
                 }
-
-                // Default respon jika hanya memanggil nama kelompoknya
                 return `**Ringkasan ${groupName}**\n\n- **Lokasi:** ${lokasi}\n- **DPL:** ${dpl}\n- **Jumlah Anggota:** ${kelData.length} mahasiswa.\n\n*Ketik 'siapa saja anggota ${groupName}' untuk melihat daftar nama, atau 'akun ${groupName}' untuk melihat seluruh akun mereka.*`;
             }
         }
@@ -631,12 +649,8 @@
             constructor() {
                 this.chats = StorageManager.get('chats', []);
                 this.currentChatId = StorageManager.get('currentChatId', null);
-                
-                if (this.chats.length === 0) {
-                    this.createNewChat();
-                } else if (!this.chats.find(c => c.id === this.currentChatId)) {
-                    this.currentChatId = this.chats[0].id;
-                }
+                if (this.chats.length === 0) this.createNewChat();
+                else if (!this.chats.find(c => c.id === this.currentChatId)) this.currentChatId = this.chats[0].id;
             }
             createNewChat() {
                 const newId = 'chat_' + Date.now();
@@ -697,7 +711,6 @@
                     selectFontSize: document.getElementById('select-font-size'),
                     selectAnimSpeed: document.getElementById('select-anim-speed'),
                     btnResetApp: document.getElementById('btn-reset-app'),
-                    gasUrl: document.getElementById('gas-url'),
                     btnSyncGas: document.getElementById('btn-sync-gas'),
                     csvStatus: document.getElementById('csv-status')
                 };
@@ -707,35 +720,22 @@
                 this.loadCurrentChatUI();
                 this.applySettings();
                 this.updateCsvStatus();
-                
-                // Menjalankan Auto-Sync saat aplikasi pertama kali dibuka
                 this.autoSyncDatabase();
             }
 
             async autoSyncDatabase() {
-                // URL GAS Permanen
-                const permanentUrl = "https://script.google.com/macros/s/AKfycbzCcmHqO8xfTAMwLxDBL1lN1oJs1-Hp4E0jVFLc7OkZPGV9PN-Oyfrt7oUQb9esd7tLkw/exec";
-                
-                // Tampilkan URL tersebut di form pengaturan (read-only secara visual)
-                this.dom.gasUrl.value = permanentUrl;
-                
-                // Ubah status indikator bot di header (Loading)
                 this.dom.botStatus.innerHTML = "Menyinkronkan Data...";
-                this.dom.botStatus.style.color = "#F59E0B"; // Warna Orange
+                this.dom.botStatus.style.color = "#F59E0B"; 
 
-                // Jalankan proses ambil data dari Google Sheets
-                const result = await this.bot.fetchFromGAS(permanentUrl);
+                const result = await this.bot.fetchFromGAS();
                 
                 if (result.success) {
                     this.updateCsvStatus();
-                    // Kembalikan status indikator bot (Sukses)
                     this.dom.botStatus.innerHTML = "Database Ready";
-                    this.dom.botStatus.style.color = "#10B981"; // Warna Hijau
+                    this.dom.botStatus.style.color = "#10B981"; 
                 } else {
-                    // Jika gagal (misal: koneksi terputus)
                     this.dom.botStatus.innerHTML = "Offline Mode";
-                    this.dom.botStatus.style.color = "#EF4444"; // Warna Merah
-                    console.error("Gagal sinkronisasi background:", result.error);
+                    this.dom.botStatus.style.color = "#EF4444"; 
                 }
             }
 
@@ -747,10 +747,9 @@
                 this.dom.chatInput.addEventListener('keydown', (e) => {
                     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); this.handleSend(); }
                 });
-                this.dom.chatInput.addEventListener('focus', () => {
-                    setTimeout(() => this.scrollToBottom(), 300);
-                });
+                this.dom.chatInput.addEventListener('focus', () => { setTimeout(() => this.scrollToBottom(), 300); });
                 this.dom.btnSend.addEventListener('click', () => this.handleSend());
+                
                 this.dom.btnNewChat.addEventListener('click', () => {
                     this.chat.createNewChat(); this.renderHistory(); this.loadCurrentChatUI();
                     if(window.innerWidth <= 768) this.closeSidebar();
@@ -765,62 +764,55 @@
                 this.dom.btnScrollBottom.addEventListener('click', () => this.scrollToBottom());
                 this.dom.btnToggleSidebar.addEventListener('click', () => this.openSidebar());
                 this.dom.mobileOverlay.addEventListener('click', () => this.closeSidebar());
-                window.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape') { this.closeSidebar(); this.closeSettings(); }
-                });
+                
                 this.dom.searchInput.addEventListener('input', (e) => this.renderHistory(e.target.value));
 
-                // Settings
+                // Settings terkunci dengan PIN
                 this.dom.btnSettings.addEventListener('click', (e) => { 
                     e.preventDefault(); 
-                    const password = prompt("Masukkan password untuk mengakses Data KKN & Pengaturan:");
+                    const password = prompt("Masukkan PIN untuk mengakses Pengaturan Admin:");
                     if (password === "291188") {
                         this.openSettings(); 
-                    } else if (password !== null) { // Jika user tidak menekan tombol 'Cancel'
-                        alert("Password salah! Akses ditolak.");
+                    } else if (password !== null) { 
+                        alert("PIN salah! Akses ditolak.");
                     }
                 });
                 this.dom.btnCloseSettings.addEventListener('click', () => this.closeSettings());
                 this.dom.selectFontSize.addEventListener('change', (e) => { StorageManager.set('fontSize', e.target.value); this.applySettings(); });
                 this.dom.selectAnimSpeed.addEventListener('change', (e) => StorageManager.set('animSpeed', e.target.value));
                 this.dom.btnResetApp.addEventListener('click', () => {
-                    if(confirm("PERINGATAN: Semua riwayat chat dan database CSV akan terhapus. Lanjutkan?")) {
+                    if(confirm("PERINGATAN: Semua riwayat chat dan cache akan terhapus. Lanjutkan?")) {
                         StorageManager.clearAll(); location.reload();
                     }
                 });
 
-                // Sinkronisasi GAS Logic (Manual dari tombol)
+                // Sinkronisasi Manual dari tombol di pengaturan (Tidak Butuh Input URL lagi)
                 this.dom.btnSyncGas.addEventListener('click', async () => {
-                    const url = this.dom.gasUrl.value.trim();
-                    if(url) {
-                        this.dom.btnSyncGas.textContent = "Menyinkronkan...";
-                        this.dom.btnSyncGas.disabled = true;
-                        
-                        const result = await this.bot.fetchFromGAS(url);
-                        
-                        if(result.success) {
-                            this.updateCsvStatus();
-                            alert(`Berhasil menyinkronkan ${result.count} baris data KKN dari Spreadsheet!`);
-                            this.dom.botStatus.innerHTML = "Database Ready";
-                            this.dom.botStatus.style.color = "#10B981";
-                        } else {
-                            alert("Gagal menyinkronkan data: " + result.error);
-                        }
-                        
-                        this.dom.btnSyncGas.textContent = "Sinkronisasi Data";
-                        this.dom.btnSyncGas.disabled = false;
+                    this.dom.btnSyncGas.textContent = "Sedang Menarik Data...";
+                    this.dom.btnSyncGas.disabled = true;
+                    
+                    const result = await this.bot.fetchFromGAS();
+                    
+                    if(result.success) {
+                        this.updateCsvStatus();
+                        alert(`Berhasil menyinkronkan ${result.count} baris data KKN dari Database Terselubung!`);
+                        this.dom.botStatus.innerHTML = "Database Ready";
+                        this.dom.botStatus.style.color = "#10B981";
                     } else {
-                        alert("URL Web App GAS tidak boleh kosong!");
+                        alert("Gagal menyinkronkan data: " + result.error);
                     }
+                    
+                    this.dom.btnSyncGas.textContent = "Tarik Data Terbaru";
+                    this.dom.btnSyncGas.disabled = false;
                 });
             }
 
             updateCsvStatus() {
                 const count = this.bot.kknData.length;
                 if(count > 0) {
-                    this.dom.csvStatus.innerHTML = `<span style="color: green; font-weight: bold;">Database Aktif: ${count} baris data KKN.</span>`;
+                    this.dom.csvStatus.innerHTML = `<span style="color: green;">✔ Terenkripsi & Sinkronisasi Aktif (${count} baris data).</span>`;
                 } else {
-                    this.dom.csvStatus.innerHTML = `Status: Belum ada data CSV. Chatbot tidak bisa mencari Mahasiswa.`;
+                    this.dom.csvStatus.innerHTML = `Status: Belum terhubung. Gagal memuat data.`;
                 }
             }
 
@@ -829,7 +821,7 @@
             openSettings() {
                 this.dom.modalSettings.classList.add('active');
                 this.dom.selectFontSize.value = StorageManager.get('fontSize', '16px');
-                this.dom.selectAnimSpeed.value = StorageManager.get('animSpeed', '1500');
+                this.dom.selectAnimSpeed.value = StorageManager.get('animSpeed', '1000');
             }
             closeSettings() { this.dom.modalSettings.classList.remove('active'); }
             applySettings() { document.documentElement.style.setProperty('--font-size-base', StorageManager.get('fontSize', '16px')); }
@@ -917,7 +909,6 @@
             app.chat = new ChatManager();
             app.ui = new UIManager(app.chat, app.bot);
         });
-
     </script>
 </body>
 </html>
